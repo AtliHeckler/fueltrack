@@ -1,6 +1,5 @@
-const CACHE_NAME = 'fueltrack-v1.2';
+const CACHE_NAME = 'fueltrack-v1.2.2';
 const ASSETS = [
-  './',
   './index.html',
   './manifest.json'
 ];
@@ -22,6 +21,13 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  if (url.pathname.endsWith('/fueltrack/') || url.pathname.endsWith('/fueltrack')) {
+    event.respondWith(
+      caches.match('./index.html').then(cached => cached || fetch('./index.html'))
+    );
+    return;
+  }
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request))
   );

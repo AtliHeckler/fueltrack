@@ -4,11 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0A0A0E">
 <title>FuelTrack</title>
 <link rel="manifest" href="manifest.json">
-<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js');});}</script>
+<script>
+(function(){
+  try {
+    var c = document.createElement('canvas'); c.width = 512; c.height = 512;
+    var x = c.getContext('2d');
+    x.fillStyle = '#0A0A0E'; x.fillRect(0,0,512,512);
+    x.strokeStyle = '#FF6200'; x.lineWidth = 20; x.strokeRect(20,20,472,472);
+    x.fillStyle = '#FF6200'; x.font = 'bold 220px Arial'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillText('FT', 256, 266);
+    var png = c.toDataURL('image/png');
+    var m = {
+      name: 'FuelTrack Offline', short_name: 'FuelTrack',
+      start_url: location.origin + '/fueltrack/index.html',
+      scope: location.origin + '/fueltrack/',
+      display: 'standalone', background_color: '#0A0A0E', theme_color: '#0A0A0E',
+      icons: [{src: png, sizes: '192x192', type: 'image/png'}, {src: png, sizes: '512x512', type: 'image/png'}]
+    };
+    var b = new Blob([JSON.stringify(m)], {type: 'application/json'});
+    document.querySelector('link[rel="manifest"]').href = URL.createObjectURL(b);
+  } catch(e){}
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() { navigator.serviceWorker.register('./sw.js'); });
+  }
+})();
+</script>
 <style>
 :root{--bg:#0A0A0E;--surface:#111116;--card:#18181F;--card-hi:#1E1E27;--border:#232335;--border-hi:#363655;--orange:#FF6200;--orange-lo:rgba(255,98,0,.09);--orange-mid:rgba(255,98,0,.25);--orange-hi:#FF7A20;--blue:#00C8E8;--blue-lo:rgba(0,200,232,.07);--green:#22C55E;--green-lo:rgba(34,197,94,.09);--red:#EF4444;--yellow:#F59E0B;--yellow-lo:rgba(245,158,11,.09);--purple:#A855F7;--purple-lo:rgba(168,85,247,.09);--text:#EEEEF8;--muted:#606090;--dim:#2A2A45;}
 *{box-sizing:border-box;margin:0;padding:0}

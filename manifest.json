@@ -1,0 +1,17 @@
+{
+  "name": "FuelTrack Offline",
+  "short_name": "FuelTrack",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0A0A0E",
+  "theme_color": "#0A0A0E",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230A0A0E'/%3E%3Crect x='16' y='16' width='480' height='480' rx='96' fill='none' stroke='%23FF6200' stroke-width='12' stroke-opacity='0.4'/%3E%3Ctext x='256' y='310' font-family='Arial Narrow,Arial,sans-serif' font-size='210' font-weight='700' text-anchor='middle'%3E%3tspan fill='%23FF6200'%3EFT%3C/tspan%3E%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

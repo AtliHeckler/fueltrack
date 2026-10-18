@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0A0A0E">
+<title>FuelTrack</title>
+<style>
+:root{--bg:#0A0A0E;--surface:#111116;--card:#18181F;--card-hi:#1E1E27;--border:#232335;--border-hi:#363655;--orange:#FF6200;--orange-lo:rgba(255,98,0,.09);--orange-mid:rgba(255,98,0,.25);--orange-hi:#FF7A20;--blue:#00C8E8;--blue-lo:rgba(0,200,232,.07);--green:#22C55E;--green-lo:rgba(34,197,94,.09);--red:#EF4444;--yellow:#F59E0B;--yellow-lo:rgba(245,158,11,.09);--purple:#A855F7;--purple-lo:rgba(168,85,247,.09);--text:#EEEEF8;--muted:#606090;--dim:#2A2A45;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--surface)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+input,select,textarea{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;border-radius:8px;padding:10px 14px;width:100%;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-lo)}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+select option{background:var(--card)}
+button{font-family:inherit;cursor:pointer;border:none;outline:none;transition:all .15s;-webkit-tap-highlight-color:transparent}
+button:disabled{opacity:.4;cursor:not-allowed}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;transition:all .15s}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:42%;background:linear-gradient(180deg,rgba(255,255,255,.035) 0%,transparent 100%);border-radius:12px 12px 0 0;pointer-events:none}
+.card.clickable{cursor:pointer}.card.clickable:hover{background:var(--card-hi);border-color:var(--border-hi)}
+.card.glow{box-shadow:0 0 24px var(--orange-lo)}
+.fade{animation:fd .2s ease}
+@keyframes fd{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes sp{to{transform:rotate(360deg)}}
+.spin{display:inline-block;border:2px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:sp .7s linear infinite}
+.btn{padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;border:none;cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--orange);color:#fff}.btn-primary:hover:not(:disabled){background:var(--orange-hi)}
+.btn-secondary{background:var(--border);color:var(--text)}.btn-secondary:hover:not(:disabled){background:var(--border-hi)}
+.btn-ghost{background:transparent;color:var(--muted)}.btn-ghost:hover:not(:disabled){color:var(--text)}
+.btn-full{width:100%}
+.lbl{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block}
+.hint{font-size:11px;color:var(--dim);margin-top:4px}
+.field{display:flex;flex-direction:column;gap:6px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.divider{height:1px;background:var(--border);margin:8px 0}
+.sh{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
+.sh-title{font-family:'Arial Narrow',Arial,sans-serif;font-size:20px;font-weight:700;color:var(--blue);letter-spacing:1.5px}
+.sh-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.stat-val{font-family:'Arial Narrow',Arial,sans-serif;font-size:26px;font-weight:700;line-height:1}
+.stat-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
+.mpg-bar{height:3px;background:var(--border);border-radius:2px;margin-top:6px;overflow:hidden}
+.mpg-fill{height:100%;border-radius:2px;transition:width .4s}
+.tog{display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;user-select:none;-webkit-user-select:none}
+.tog-track{width:44px;height:24px;border-radius:12px;position:relative;transition:background .2s;flex-shrink:0}
+.tog-thumb{position:absolute;width:18px;height:18px;border-radius:9px;background:#fff;top:3px;transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.ac-wrap{position:relative}
+.ac-drop{position:absolute;top:100%;left:0;right:0;z-index:500;background:var(--card);border:1px solid rgba(255,98,0,.4);border-radius:0 0 8px 8px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.5);display:none}
+.ac-item{padding:9px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--border);color:var(--text)}
+.ac-item:hover{background:var(--card-hi)}
+.ac-foot{padding:5px 14px;font-size:10px;color:var(--dim)}
+#splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:9999;transition:opacity .4s}
+.logo{font-family:'Arial Narrow',Arial,sans-serif;font-size:42px;font-weight:700;letter-spacing:5px}
+.lo{color:var(--orange)}.lb{color:var(--blue)}
+#app{max-width:640px;margin:0 auto;min-height:100vh;display:none;flex-direction:column}
+#hdr{background:rgba(17,17,22,.94);border-bottom:1px solid var(--border);padding:12px 16px 10px;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+#hi{display:flex;justify-content:space-between;align-items:center}
+.hlogo{font-family:'Arial Narrow',Arial,sans-serif;font-size:24px;font-weight:700;letter-spacing:3px;line-height:1}
+.hsub{font-size:9px;color:var(--dim);letter-spacing:2.5px;text-transform:uppercase}
+#main{flex:1;padding:16px 16px 100px;overflow-y:auto}
+#nav{position:fixed;bottom:0;left:0;right:0;max-width:640px;margin:0 auto;background:rgba(17,17,22,.92);border-top:1px solid var(--border);display:flex;z-index:100;backdrop-filter:blur(12px)}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0;padding-bottom:max(10px,env(safe-area-inset-bottom,10px));background:transparent;border:none;border-top:2px solid transparent;color:var(--muted);cursor:pointer;transition:color .15s}
+.nb.on{color:var(--orange);border-top-color:var(--orange)}
+.ni{font-size:20px}.nl{font-size:10px;margin-top:2px}.nb.on .nl{font-weight:700}
+.tab{flex:1;padding:10px 0;border-radius:8px;font-weight:600;font-size:13px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
+.tab.on{background:var(--orange);color:#fff;border-color:var(--orange)}
+.diyc{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;border:2px solid var(--muted)}
+.diyc.on{background:var(--green);border-color:var(--green)}
+.adv-tog{font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none}
+.adv-arr{display:inline-block;transition:transform .2s}
+.adv-arr.o{transform:rotate(90deg)}
+.adv-panel{padding:14px;background:var(--purple-lo);border:1px solid rgba(168,85,247,.2);border-radius:10px;display:none;flex-direction:column;gap:12px}
+.adv-panel.o{display:flex}
+.adv-title{font-size:11px;color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.oil-rec{padding:8px 12px;background:var(--yellow-lo);border:1px solid rgba(245,158,11,.27);border-radius:8px;font-size:12px;color:var(--yellow)}
+</style>
+</head>
+<body>
+<div id="splash"><div class="logo"><span class="lo">FUEL</span><span class="lb">TRACK</span></div><div class="spin" style="width:28px;height:28px"></div><div style="color:var(--muted);font-size:12px;letter-spacing:2px;text-transform:uppercase">Offline Edition</div></div>
+<div id="app"><div id="hdr"><div id="hi"></div></div><div id="main"></div><nav id="nav"></nav></div>
+<script>
+'use strict';
+var VDB={"Ford":["Bronco","Bronco Sport","EcoSport","Edge","Escape","Escort","Expedition","Explorer","Explorer Sport Trac","F-150","F-250 Super Duty","F-350 Super Duty","F-450 Super Duty","Fiesta","Five Hundred","Flex","Focus","Freestar","Fusion","GT","Maverick","Mustang","Mustang Mach-E","Probe","Ranger","Taurus","Taurus X","Thunderbird","Transit","Transit Connect","Windstar"],"Chevrolet":["Avalanche","Aveo","Blazer","Bolt EUV","Bolt EV","Camaro","Captiva","City Express","Colorado","Corvette","Cruze","Equinox","Express","HHR","Impala","Malibu","Monte Carlo","Silverado 1500","Silverado 2500HD","Silverado 3500HD","Sonic","Spark","Suburban","Tahoe","Trailblazer","Traverse","Trax","Uplander"],"Toyota":["4Runner","86","Avalon","bZ4X","C-HR","Camry","Corolla","Corolla Cross","Crown","FJ Cruiser","GR86","GR Corolla","GR Supra","Highlander","Land Cruiser","Matrix","Mirai","MR2","Prius","Prius C","Prius Prime","Prius V","RAV4","RAV4 Prime","Sequoia","Sienna","Solara","Supra","Tacoma","Tundra","Venza","Yaris"],"Honda":["Accord","Civic","Clarity","CR-V","CR-Z","Crosstour","Element","Fit","HR-V","Insight","Odyssey","Passport","Pilot","Prologue","Ridgeline","S2000"],"Dodge":["Avenger","Caliber","Challenger","Charger","Dakota","Dart","Durango","Grand Caravan","Journey","Magnum","Neon","Nitro","Stratus","Viper"],"RAM":["1500","2500","3500","4500","5500","1500 Classic","ProMaster","ProMaster City"],"GMC":["Acadia","Canyon","Envoy","Jimmy","Safari","Savana","Sierra 1500","Sierra 2500HD","Sierra 3500HD","Sonoma","Terrain","Yukon","Yukon XL"],"Jeep":["Cherokee","Commander","Compass","Gladiator","Grand Cherokee","Grand Cherokee L","Grand Wagoneer","Liberty","Patriot","Renegade","Wagoneer","Wrangler","Wrangler Unlimited"],"Nissan":["370Z","400Z","Altima","Armada","Cube","Frontier","GT-R","Juke","Kicks","Leaf","Maxima","Murano","NV","NV200","Pathfinder","Rogue","Rogue Sport","Sentra","Titan","Titan XD","Versa","Xterra","Z"],"Hyundai":["Accent","Azera","Elantra","Elantra GT","Elantra N","IONIQ","IONIQ 5","IONIQ 6","Kona","Kona Electric","Nexo","Palisade","Santa Cruz","Santa Fe","Sonata","Tiburon","Tucson","Veloster","Venue"],"Kia":["Cadenza","Carnival","EV6","Forte","K5","Niro","Niro EV","Rio","Seltos","Soul","Soul EV","Sorento","Sportage","Stinger","Telluride"],"Subaru":["Ascent","BRZ","Crosstrek","Forester","Impreza","Legacy","Outback","Solterra","WRX","WRX STI"],"Mazda":["3","6","CX-3","CX-30","CX-5","CX-50","CX-9","CX-90","MX-30","MX-5 Miata","RX-7","RX-8","Speed3","Speed6"],"Volkswagen":["Arteon","Atlas","Atlas Cross Sport","Beetle","CC","Eos","Golf","Golf Alltrack","Golf GTI","Golf R","Golf SportWagen","ID.4","Jetta","Jetta GLI","Passat","Rabbit","Taos","Tiguan","Touareg"],"BMW":["1 Series","2 Series","3 Series","4 Series","5 Series","6 Series","7 Series","8 Series","i3","i4","i7","i8","iX","M2","M3","M4","M5","M6","M8","X1","X2","X3","X4","X5","X6","X7","XM","Z3","Z4"],"Mercedes-Benz":["A-Class","AMG GT","C-Class","CLA","CLS","E-Class","EQB","EQE","EQS","G-Class","GLA","GLB","GLC","GLE","GLS","GLK","ML-Class","R-Class","S-Class","SL","SLC","SLK","Sprinter"],"Audi":["A3","A4","A5","A6","A7","A8","e-tron","e-tron GT","Q3","Q4 e-tron","Q5","Q7","Q8","R8","RS3","RS5","RS6","RS7","S3","S4","S5","S6","S7","S8","SQ5","SQ7","TT","TTS"],"Lexus":["CT","ES","GS","GX","IS","LC","LS","LX","NX","RC","RX","TX","UX"],"Acura":["ILX","Integra","MDX","NSX","RDX","RL","RLX","RSX","TL","TLX","TSX","ZDX"],"Infiniti":["EX","FX","G25","G35","G37","M","Q30","Q50","Q60","Q70","QX30","QX50","QX55","QX60","QX70","QX80"],"Cadillac":["ATS","CT4","CT5","CT6","DTS","Eldorado","Escalade","Escalade ESV","LYRIQ","SRX","STS","XT4","XT5","XT6","XTS"],"Buick":["Cascada","Enclave","Encore","Encore GX","Envision","LaCrosse","LeSabre","Lucerne","Park Avenue","Regal","Regal TourX","Rendezvous","Verano"],"Chrysler":["200","300","300C","Aspen","Crossfire","Pacifica","Pacifica Hybrid","PT Cruiser","Sebring","Town & Country","Voyager"],"Lincoln":["Aviator","Continental","Corsair","MKC","MKS","MKT","MKX","MKZ","Navigator","Town Car","Zephyr"],"Volvo":["C30","C40","C70","S40","S60","S60 Cross Country","S80","S90","V40","V50","V60","V60 Cross Country","V70","V90","XC40","XC60","XC70","XC90"],"Porsche":["718 Boxster","718 Cayman","911","Cayenne","Macan","Panamera","Taycan"],"Land Rover":["Defender","Discovery","Discovery Sport","Freelander","LR2","LR3","LR4","Range Rover","Range Rover Evoque","Range Rover Sport","Range Rover Velar"],"Genesis":["G70","G80","G90","GV70","GV80","GV90"],"Mitsubishi":["Eclipse","Eclipse Cross","Endeavor","Galant","i-MiEV","Lancer","Outlander","Outlander PHEV","Outlander Sport","Raider"],"Tesla":["Cybertruck","Model 3","Model S","Model X","Model Y","Roadster"],"MINI":["Clubman","Convertible","Cooper","Cooper SE","Countryman","Paceman","Roadster"],"Alfa Romeo":["4C","Giulia","Giulietta","Stelvio","Tonale"],"Fiat":["124 Spider","500","500L","500X"],"Pontiac":["Aztek","Bonneville","Firebird","G5","G6","G8","Grand Am","Grand Prix","Montana","Solstice","Torrent","Vibe"],"Saturn":["Aura","Ion","L-Series","Outlook","Relay","Sky","SL","SW","Vue"],"Oldsmobile":["Alero","Aurora","Bravada","Cutlass","Intrigue","Silhouette"],"Mercury":["Grand Marquis","Mariner","Milan","Montego","Monterey","Mountaineer","Sable","Tracer","Villager"],"Scion":["FR-S","iA","iM","iQ","tC","xA","xB","xD"],"Rivian":["R1S","R1T","R2"],"Lucid":["Air","Gravity"],"Isuzu":["Amigo","Axiom","Hombre","i-290","i-370","Rodeo","Trooper","VehiCROSS"],"Suzuki":["Aerio","Equator","Esteem","Forenza","Grand Vitara","Kizashi","Samurai","Sidekick","Swift","Verona","Vitara","XL7"],"Saab":["9-2X","9-3","9-4X","9-5","9-7X","900","9000"],"Hummer":["H1","H2","H3","H3T"],"Plymouth":["Barracuda","Breeze","Neon","Prowler","Voyager"],"Eagle":["Summit","Talon","Vision"],"Geo":["Metro","Prizm","Storm","Tracker"],"Datsun":["210","240Z","260Z","280Z","310","510","710","720","B210"]};
+var POP=["Ford","Chevrolet","Toyota","Honda","Dodge","RAM","GMC","Jeep","Nissan","Hyundai","Kia","Subaru","Mazda","Volkswagen","BMW","Mercedes-Benz","Audi","Lexus","Acura","Infiniti","Cadillac","Buick","Chrysler","Lincoln","Volvo","Porsche","Land Rover","Genesis","Mitsubishi","Tesla","MINI"];
+var ALL_MAKES=Object.keys(VDB).sort(function(a,b){var ia=POP.indexOf(a),ib=POP.indexOf(b);if(ia>-1&&ib>-1)return ia-ib;if(ia>-1)return -1;if(ib>-1)return 1;return a.localeCompare(b);});
+var CY=new Date().getFullYear(),YEARS=(function(){var a=[];for(var i=0;i<40;i++)a.push(CY-i);return a;})();
+var BRANDS=["Shell","BP","Chevron","ExxonMobil","Marathon","Speedway","Sunoco","Valero","Circle K","Costco","Sam's Club","Casey's","Kwik Trip","Pilot / Flying J","Love's","Wawa","QuikTrip","RaceTrack","Other / Unknown"];
+var OCTANES=["85 (High Altitude)","87 (Regular)","89 (Mid-Grade)","91 (Premium)","93 (Premium+)","E85","Diesel","Other"];
+var ADDS=["None","Seafoam","STP","Lucas","BG 44K","Techron","Royal Purple","Stabil","Other"];
+var DSTYLES=["Normal","Highway Cruise","City / Stop-Go","Hypermile","Aggressive","Off-Road / Trail","Towing / Hauling","Mixed"];
+var LOADS=["Solo","Passengers","Light Cargo","Heavy Cargo","Towing Trailer"];
+var WEATHER=["Clear","Cloudy","Rain","Snow / Ice","Extreme Heat (90F+)","Extreme Cold (20F-)"];
+var MAINT=["Oil Change","Tire Rotation","New Tires","Air Filter","Cabin Filter","Spark Plugs","Brake Pads","Brake Rotors","Transmission Service","Coolant Flush","Fuel Filter","Battery","Belts & Hoses","Alignment","Wiper Blades","State Inspection","Emissions Test","Wash / Detail","Custom"];
+var OILT=["Conventional","Synthetic Blend","Full Synthetic","High Mileage Synthetic","Diesel"];
+var OILW=["0W-16","0W-20","5W-20","5W-30","5W-40","10W-30","10W-40","15W-40","20W-50"];
+var TRANS=["Automatic","Manual / MT","CVT","DCT / Dual-Clutch","AMT","Semi-Auto","Other"];
+var FTYPES=[["gasoline","Gasoline"],["diesel","Diesel"],["flex","Flex (E85)"],["hybrid","Hybrid"],["phev","Plug-in Hybrid"],["electric","Electric"]];
+var CMPM=[{v:"lifetime",l:"Lifetime (All Time)"},{v:"ownership",l:"Current Ownership Period"},{v:"12mo",l:"Rolling 12 Months"},{v:"6mo",l:"Rolling 6 Months"},{v:"90d",l:"Rolling 90 Days"}];
+var MKTS=[{v:"USDM",l:"USDM — US Market"},{v:"JDM",l:"JDM — Japan Market"},{v:"EDM",l:"EDM — European Market"},{v:"ADM",l:"ADM — Australian Market"},{v:"CDM",l:"CDM — Canadian Market"},{v:"UKDM",l:"UKDM — UK Market"},{v:"Global",l:"Global / Universal"},{v:"Custom",l:"Other / Custom Market"}];
+// Storage
+var ls={g:function(k){try{var v=localStorage.getItem('ft_'+k);return v?JSON.parse(v):null;}catch(e){return null;}},s:function(k,v){try{localStorage.setItem('ft_'+k,JSON.stringify(v));}catch(e){}}};
+function saveCH(fk,val){if(!val||!val.trim())return;var h=ls.g('ch')||{};var ex=h[fk]||[];val=val.trim();if(ex.indexOf(val)===-1){h[fk]=[val].concat(ex).slice(0,40);ls.s('ch',h);}}
+function getCH(fk){return(ls.g('ch')||{})[fk]||[];}
+function sugg(fk,q){if(!q||!q.length)return[];var l=getCH(fk),ql=q.toLowerCase();return l.filter(function(s){return s.toLowerCase().indexOf(ql)>-1&&s.toLowerCase()!==ql;}).slice(0,6);}
+// State
+var S={vehicles:ls.g('vehicles')||[],fuel:ls.g('fuel')||[],maint:ls.g('maint')||[],activeId:ls.g('aid')||null,cfg:ls.g('cfg')||{cpm:'lifetime'},view:'dashboard'};
+function save(){ls.s('vehicles',S.vehicles);ls.s('fuel',S.fuel);ls.s('maint',S.maint);ls.s('aid',S.activeId);ls.s('cfg',S.cfg);}
+function av(){return S.vehicles.find(function(v){return v.id===S.activeId;})||S.vehicles[0]||null;}
+function vFuel(id){return S.fuel.filter(function(l){return l.vehicleId===id;});}
+function vMaint(id){return S.maint.filter(function(l){return l.vehicleId===id;});}
+function go(view){S.view=view;renderAll();}
+function navGo(v){if((v==='fuel'||v==='maint')&&!av()){go('addv');return;}go(v);}
+// Utils
+function uid(){return Math.random().toString(36).slice(2)+Date.now().toString(36);}
+var F={mpg:function(n){return n!=null?(+n).toFixed(1):'—';},usd:function(n){return n!=null?'$'+(+n).toFixed(2):'—';},cpm:function(n){return n!=null?'$'+(+n).toFixed(3):'—';},gal:function(n){return n!=null?(+n).toFixed(3):'—';},mi:function(n){return n!=null?(+n).toLocaleString():'—';},dt:function(d){return d?new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';}};
+function cutoff(m,ad){var now=Date.now();if(m==='lifetime')return 0;if(m==='ownership')return new Date(ad||0).getTime();if(m==='12mo')return now-365*864e5;if(m==='6mo')return now-182*864e5;if(m==='90d')return now-90*864e5;return 0;}
+function stats(fuel,maint,m,v){
+  if(!v)return{};
+  var cut=cutoff(m,v.addedDate);
+  var fl=fuel.filter(function(l){return new Date(l.date+'T12:00:00').getTime()>=cut;});
+  var ml=maint.filter(function(l){return new Date(l.date+'T12:00:00').getTime()>=cut;});
+  var val=fl.filter(function(l){return !l.partial&&+l.miles>0&&+l.gallons>0;});
+  var mpgs=val.map(function(l){return +l.miles/+l.gallons;});
+  var sm=function(a,fn){return a.reduce(function(s,l){return s+(fn(l)||0);},0);};
+  var avg=mpgs.length?mpgs.reduce(function(a,b){return a+b;},0)/mpgs.length:null;
+  var best=mpgs.length?Math.max.apply(null,mpgs):null;
+  var worst=mpgs.length?Math.min.apply(null,mpgs):null;
+  var mi=sm(fl,function(l){return +l.miles;});
+  var fc=sm(fl,function(l){return +l.totalCost;});
+  var mc=sm(ml,function(l){return +l.cost;});
+  var tc=fc+mc;var gal=sm(fl,function(l){return +l.gallons;});
+  return{avg:avg,best:best,worst:worst,mi:mi,fc:fc,mc:mc,tc:tc,gal:gal,cpm:mi>0?tc/mi:null,fcpm:mi>0?fc/mi:null,fills:fl.length,svcs:ml.length};
+}
+// DOM helpers
+function el(tag,p){
+  var e=document.createElement(tag);
+  var ch=Array.prototype.slice.call(arguments,2);
+  if(p){Object.keys(p).forEach(function(k){var v=p[k];if(v==null||v===false)return;if(k==='style'&&typeof v==='object'){Object.assign(e.style,v);}else if(k.slice(0,2)==='on'&&typeof v==='function'){e.addEventListener(k.slice(2).toLowerCase(),v);}else if(k==='className'){e.className=v;}else if(k==='value'){e.value=v;}else if(k==='checked'){e.checked=!!v;}else if(k==='disabled'){e.disabled=true;}else if(k==='selected'){e.selected=true;}else{e.setAttribute(k,v===true?'':String(v));}});}
+  function ap(c){if(c==null||c===false)return;if(Array.isArray(c)){c.forEach(ap);return;}if(c instanceof Node){e.appendChild(c);return;}e.appendChild(document.createTextNode(String(c)));}
+  ch.forEach(ap);return e;
+}
+function d(p){return el.apply(null,['div'].concat(Array.prototype.slice.call(arguments)));}
+function s(p){return el.apply(null,['span'].concat(Array.prototype.slice.call(arguments)));}
+function clr(node){while(node.firstChild)node.removeChild(node.firstChild);}
+// UI components
+function lbl(t){return el('label',{className:'lbl'},t);}
+function hint(t){return s({className:'hint'},t);}
+function fld(label,ch,h){var wrap=d({className:'field'});if(label)wrap.appendChild(lbl(label));if(Array.isArray(ch))ch.forEach(function(c){if(c)wrap.appendChild(c);});else if(ch)wrap.appendChild(ch);if(h)wrap.appendChild(hint(h));return wrap;}
+function mk_btn(txt,variant,onClick,full){var b=el('button',{className:'btn btn-'+variant+(full?' btn-full':''),onClick:onClick},txt);return b;}
+function mk_card(children,xstyle,clickFn,glow){var cls='card'+(clickFn?' clickable':'')+(glow?' glow':'');var wrap=d({className:cls,style:xstyle||{}});if(clickFn)wrap.addEventListener('click',clickFn);(Array.isArray(children)?children:[children]).forEach(function(c){if(c)wrap.appendChild(c);});return wrap;}
+function mk_tog(label,val,onChange,sub){
+  var on=!!val;var wrap=d({className:'tog'});
+  var left=d(null,d({style:{fontSize:'14px',color:on?'var(--text)':'var(--muted)'}},label));
+  if(sub)left.appendChild(d({style:{fontSize:'11px',color:'var(--dim)',marginTop:'2px'}},sub));
+  var track=d({className:'tog-track',style:{background:on?'var(--orange)':'var(--border)'}});
+  var thumb=d({className:'tog-thumb',style:{left:on?'23px':'3px'}});
+  track.appendChild(thumb);wrap.appendChild(left);wrap.appendChild(track);
+  wrap.addEventListener('click',function(){on=!on;track.style.background=on?'var(--orange)':'var(--border)';thumb.style.left=on?'23px':'3px';left.firstChild.style.color=on?'var(--text)':'var(--muted)';onChange(on);});
+  return wrap;
+}
+function mk_sel(opts,val,onChange,ph){
+  var s=el('select',{onChange:function(e){onChange(e.target.value);}});
+  if(ph)s.appendChild(el('option',{value:''},ph));
+  opts.forEach(function(o){var v=typeof o==='string'?o:(o.v!=null?o.v:o[0]);var l=typeof o==='string'?o:(o.l||o[1]||v);s.appendChild(el('option',{value:String(v),selected:String(v)===String(val)},l));});
+  return s;
+}
+function mk_inp(type,val,onChange,ph,step,xp){var p=Object.assign({type:type||'text',value:val||'',placeholder:ph||'',oninput:function(e){onChange(e.target.value);}},xp||{});if(step)p.step=step;return el('input',p);}
+function mk_ta(val,onChange,ph,rows){return el('textarea',{value:val||'',rows:rows||3,placeholder:ph||'',oninput:function(e){onChange(e.target.value);}});}
+function mk_spinner(sz){return d({className:'spin',style:{width:(sz||24)+'px',height:(sz||24)+'px'}});}
+function mk_stat(label,val,unit,color){
+  var c=mk_card([d({className:'stat-lbl'},label),d({style:{display:'flex',alignItems:'baseline',gap:'4px'}},s({className:'stat-val',style:{color:color||'var(--text)'}},val),unit?s({style:{fontSize:'11px',color:'var(--muted)'}},unit):null)]);
+  c.style.padding='14px';return c;
+}
+function mk_bar(mpg,best){if(!mpg||!best)return null;var pct=Math.min(100,(mpg/best)*100);var col=mpg>=best*.9?'var(--green)':mpg>=best*.7?'var(--yellow)':'var(--red)';var w=d({className:'mpg-bar'});w.appendChild(d({className:'mpg-fill',style:{width:pct+'%',background:col}}));return w;}
+function mk_sh(title,sub,act){var w=d({className:'sh'});var l=d(null,d({className:'sh-title'},title));if(sub)l.appendChild(d({className:'sh-sub'},sub));w.appendChild(l);if(act)w.appendChild(act);return w;}
+function divider(){return d({className:'divider'});}
+// Autocomplete
+function mk_ac(opts){
+  var val=opts.value||'';var wrap=d({className:'ac-wrap'});var drop=d({className:'ac-drop'});
+  var inp=el('input',{type:'text',value:val,placeholder:opts.ph||'',oninput:function(e){val=e.target.value;opts.onChange(val);refresh();},onfocus:function(){refresh();}});
+  function refresh(){var sg=sugg(opts.fk,val);clr(drop);if(!sg.length){drop.style.display='none';return;}sg.forEach(function(sv){var item=d({className:'ac-item'});item.appendChild(s({style:{color:'var(--muted)',marginRight:'6px',fontSize:'11px'}},'↩ '));item.appendChild(document.createTextNode(sv));item.addEventListener('mousedown',function(e){e.preventDefault();val=sv;inp.value=sv;opts.onChange(sv);saveCH(opts.fk,sv);drop.style.display='none';});drop.appendChild(item);});drop.appendChild(d({className:'ac-foot'},'Previous entries · tap to reuse'));drop.style.display='block';}
+  document.addEventListener('click',function(e){if(!wrap.contains(e.target))drop.style.display='none';});
+  wrap.appendChild(inp);wrap.appendChild(drop);
+  return{el:wrap,get:function(){return val;},set:function(v){val=v;inp.value=v||'';}};
+}
+// SmartSelect
+function mk_ss(label,opts,val,fk,onChange,ph,cph,h){
+  var OTH='__other__';var isOth=val!==''&&val!=null&&opts.indexOf(val)===-1;var cv=isOth?val:'';
+  var wrap=d({className:'field'});if(label)wrap.appendChild(lbl(label));
+  var sel=mk_sel(opts.map(function(o){return{v:o,l:o};}).concat([{v:OTH,l:'── Other / Custom ──'}]),isOth?OTH:(val||''),function(v){if(v===OTH){isOth=true;ca.style.display='block';onChange(cv||OTH);}else{isOth=false;ca.style.display='none';onChange(v);}},ph||'Select...');
+  var ac=mk_ac({value:cv,ph:cph||'Type custom value...',fk:fk,onChange:function(v){cv=v;onChange(v||OTH);}});
+  var ca=d({style:{display:isOth?'block':'none',marginTop:'6px'}});ca.appendChild(ac.el);
+  wrap.appendChild(sel);wrap.appendChild(ca);if(h)wrap.appendChild(hint(h));return wrap;
+}
+function mk_oilT(val,onChange,rec){return fld('Oil Type',mk_sel(OILT.map(function(t){return{v:t,l:t===rec?'⭐ '+t+' (Mfr. Spec)':t};}),val,onChange),rec?'Mfr. rec: '+rec:null);}
+function mk_oilW(val,onChange,rec){return fld('Weight',mk_sel(OILW.map(function(w){return{v:w,l:w===rec?'⭐ '+w+' (Mfr. Spec)':w};}),val,onChange),rec?'Mfr. rec: '+rec:null);}
+
+// ─── DASHBOARD ───────────────────────────────────────────
+function vDash(){
+  var v=av();var root=d({className:'fade',style:{display:'flex',flexDirection:'column',gap:'14px'}});
+  if(!v){root.appendChild(d({style:{textAlign:'center',padding:'60px 20px'}},d({style:{fontSize:'64px',marginBottom:'16px'}},'🚗'),d({style:{fontFamily:"'Arial Narrow',Arial,sans-serif",fontSize:'26px',fontWeight:'700',marginBottom:'8px'}},'No Vehicle Yet'),d({style:{color:'var(--muted)',fontSize:'14px',marginBottom:'28px'}},'Add your first vehicle to start tracking.'),mk_btn('+ Add Vehicle','primary',function(){go('addv');})));return root;}
+  var fl=vFuel(v.id),ml=vMaint(v.id),st=stats(fl,ml,S.cfg.cpm,v);
+  // Banner
+  var bLeft=d(null,d({style:{fontFamily:"'Arial Narrow',Arial,sans-serif",fontSize:'26px',fontWeight:'700',lineHeight:'1.1'}},v.year+' '+v.make),d({style:{fontFamily:"'Arial Narrow',Arial,sans-serif",fontSize:'20px',fontWeight:'600',color:'var(--orange)'}},v.model));
+  var parts=[v.trim,v.engine,v.transmission].filter(Boolean);if(parts.length)bLeft.appendChild(d({style:{fontSize:'12px',color:'var(--muted)',marginTop:'3px'}},parts.join(' · ')));
+  if(v.isHybrid)bLeft.appendChild(d({style:{fontSize:'11px',color:'var(--green)',marginTop:'2px'}},'⚡ Hybrid'));
+  if(v.market&&v.market!=='USDM')bLeft.appendChild(d({style:{fontSize:'11px',color:'var(--purple)',marginTop:'2px'}},v.market));
+  var bRight=d({style:{textAlign:'right'}});if(v.nickname)bRight.appendChild(d({style:{fontSize:'14px',color:'var(--blue)',fontWeight:'600'}},'"'+v.nickname+'"'));if(v.color)bRight.appendChild(d({style:{fontSize:'12px',color:'var(--muted)',marginTop:'2px'}},v.color));if(v.tankSize>0)bRight.appendChild(d({style:{fontSize:'11px',color:'var(--dim)',marginTop:'4px'}},v.tankSize+' gal'));
+  root.appendChild(mk_card([d({style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}},bLeft,bRight)],{background:'linear-gradient(135deg,#1C1C28 0%,#141422 100%)',border:'1px solid rgba(255,98,0,.33)',padding:'18px 16px'},null,true));
+  // Period
+  var pr=d({style:{display:'flex',alignItems:'center',gap:'10px'}});pr.appendChild(s({style:{fontSize:'11px',color:'var(--muted)',fontWeight:'600',textTransform:'uppercase',letterSpacing:'1px',whiteSpace:'nowrap'}},'Period:'));pr.appendChild(mk_sel(CMPM,S.cfg.cpm,function(v){S.cfg.cpm=v;ls.s('cfg',S.cfg);renderAll();}));root.appendChild(pr);
+  // Stats
+  var g1=d({className:'g2'});g1.appendChild(mk_stat('Avg MPG',F.mpg(st.avg),'mpg','var(--green)'));g1.appendChild(mk_stat('True Cost / Mile',F.cpm(st.cpm),null,'var(--orange)'));g1.appendChild(mk_stat('Fuel Cost / Mile',F.cpm(st.fcpm),null,'var(--yellow)'));g1.appendChild(mk_stat('Miles Tracked',F.mi(st.mi),'mi',null));root.appendChild(g1);
+  var g2=d({className:'g3'});g2.appendChild(mk_stat('Best Tank',F.mpg(st.best),'mpg','var(--green)'));g2.appendChild(mk_stat('Worst Tank',F.mpg(st.worst),'mpg','var(--red)'));g2.appendChild(mk_stat('Fill-Ups',st.fills||0,null,null));root.appendChild(g2);
+  var g3=d({className:'g2'});g3.appendChild(mk_stat('Fuel Spent',F.usd(st.fc),null,'var(--yellow)'));g3.appendChild(mk_stat('Service Spent',F.usd(st.mc),null,'var(--blue)'));root.appendChild(g3);
+  var tc=mk_card([d({className:'stat-lbl'},'Total Vehicle Cost'),d({style:{fontFamily:"'Arial Narrow',Arial,sans-serif",fontSize:'34px',fontWeight:'700',color:'var(--orange)'}},F.usd(st.tc)),d({style:{fontSize:'12px',color:'var(--muted)',marginTop:'4px'}},F.usd(st.fc)+' fuel · '+F.usd(st.mc)+' service'+(st.gal>0?' · '+F.gal(st.gal)+' gal total':''))],{background:'linear-gradient(135deg,#1A1010,#1A1220)',border:'1px solid rgba(255,98,0,.2)'});root.appendChild(tc);
+  // Recent
+  var sortF=[].concat(fl).sort(function(a,b){return new Date(b.date)-new Date(a.date);}).slice(0,3);
+  if(sortF.length){root.appendChild(mk_sh('RECENT FILL-UPS',null,mk_btn('All →','ghost',function(){go('history');})));sortF.forEach(function(l){var mpg=!l.partial&&l.miles&&l.gallons?l.miles/l.gallons:null;var col=mpg?(mpg>=(st.best||99)*.9?'var(--green)':mpg>=(st.best||99)*.7?'var(--yellow)':'var(--red)'):'var(--muted)';var info=[l.gallons+' gal',F.usd(l.totalCost)];if(l.brand)info.push(l.brand);if(l.drivingStyle&&l.drivingStyle!=='Normal')info.push(l.drivingStyle);var row=d({style:{display:'flex',justifyContent:'space-between',alignItems:'center'}});var left=d(null,d({style:{fontWeight:'600',fontSize:'14px'}},F.dt(l.date)),d({style:{fontSize:'12px',color:'var(--muted)',marginTop:'3px'}},info.join(' · ')));var bar=mk_bar(mpg,st.best);if(bar)left.appendChild(bar);var right=d({style:{textAlign:'right',flexShrink:'0',marginLeft:'12px'}});if(mpg!=null)right.appendChild(d({style:{fontFamily:"'Arial Narrow',Arial,sans-serif",fontSize:'24px',fontWeight:'700',color:col,lineHeight:'1'}},mpg.toFixed(1)+'mpg'));if(l.partial)right.appendChild(d({style:{fontSize:'10px',color:'var(--yellow)',fontWeight:'600'}},'PARTIAL'));row.appendChild(left);row.appendChild(right);root.appendChild(mk_card([row],{padding:'12px 16px'}));});}
+  // Reminders
+  var rem=vMaint(v.id).filter(function(l){return l.nextOdo||l.nextDate;}).sort(function(a,b){return(a.nextOdo||999999)-(b.nextOdo||999999);}).slice(0,3);
+  if(rem.length){root.appendChild(mk_sh('SERVICE REMINDERS'));rem.forEach(function(l){var pts=[];if(l.nextOdo)pts.push('Due at '+F.mi(l.nextOdo)+' mi');if(l.nextDate)pts.push('By '+F.dt(l.nextDate));root.appendChild(mk_card([d({style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},d(null,d({style:{fontWeight:'600',fontSize:'14px',color:'var(--yellow)'}},l.type),d({style:{fontSize:'12px',color:'var(--muted)',marginTop:'2px'}},pts.join(' · '))),d({style:{fontSize:'20px'}},'🔔'))],{border:'1px solid rgba(245,158,11,.2)'}));});}
+  if(!fl.length)root.appendChild(mk_card([d({style:{textAlign:'center',padding:'16px',fontSize:'13px',color:'var(--muted)'}},'No fill-ups yet. Tap ⛽ Fuel below to start!')],{border:'1px dashed var(--border)'}));
+  return root;
+}
+
+// ─── ADD FUEL ────────────────────────────────────────────
+function vFuelForm(){
+  var v=av();if(!v)return d(null,'No vehicle selected.');
+  var today=new Date().toISOString().slice(0,10);
+  var f={date:today,gal:'',cost:'',ppg:'',mi:'',odo:'',partial:false,brand:'',octane:OCTANES[1],add:'None',style:'Normal',load:'Solo',weather:'Clear',ac:false,station:'',notes:''};
+  var recOct=v.recommendedOctane||87;
+  var defOct=OCTANES.find(function(o){return o.startsWith(String(recOct));});if(defOct)f.octane=defOct;
+  var root=d({className:'fade',style:{display:'flex',flexDirection:'column',gap:'14px'}});
+  root.appendChild(mk_sh('LOG FILL-UP',v.year+' '+v.make+' '+v.model));
+  // MPG preview
+  var mpgCard=mk_card([d({style:{fontSize:'11px',color:'var(--green)',fontWeight:'700',letterSpacing:'1px'}},'CALCULATED MPG'),d({style:{fontFamily:"'Arial Narrow',Arial,sans-serif",fontSize:'42px',fontWeight:'700',color:'var(--green)',lineHeight:'1'}},s({id:'mpn'},'0.0'),' mpg')],{background:'var(--green-lo)',border:'1px solid rgba(34,197,94,.27)',display:'none'});
+  root.appendChild(mpgCard);
+  function upMPG(){var mpg=(!f.partial&&f.mi&&f.gal&&+f.gal>0)?(+f.mi/+f.gal):null;mpgCard.style.display=mpg?'block':'none';var n=mpgCard.querySelector('#mpn');if(n&&mpg)n.textContent=mpg.toFixed(1);}
+  var ppgEl;
+  var r1=d({className:'g2'});r1.appendChild(fld('Date',mk_inp('date',f.date,function(v){f.date=v;})));r1.appendChild(fld('Gallons *',mk_inp('number',f.gal,function(v){f.gal=v;if(f.cost&&+v>0){f.ppg=(+f.cost/+v).toFixed(3);if(ppgEl)ppgEl.value=f.ppg;}upMPG();},'0.000','0.001')));root.appendChild(r1);
+  var r2=d({className:'g2'});r2.appendChild(fld('Total Cost *',mk_inp('number',f.cost,function(v){f.cost=v;if(f.gal&&+f.gal>0){f.ppg=(+v/+f.gal).toFixed(3);if(ppgEl)ppgEl.value=f.ppg;}}),'$0.00','0.01','Amount at pump'));var ppgF=fld('Price / Gal',mk_inp('number',f.ppg,function(v){f.ppg=v;if(f.gal&&+v>0)f.cost=(+f.gal*+v).toFixed(2);},'$0.000','0.001'),'Auto-calculates');ppgEl=ppgF.querySelector('input');r2.appendChild(ppgF);root.appendChild(r2);
+  var r3=d({className:'g2'});r3.appendChild(fld('Trip Miles *',mk_inp('number',f.mi,function(v){f.mi=v;upMPG();},'0.0','0.1'),'Since last fill-up'));r3.appendChild(fld('Odometer',mk_inp('number',f.odo,function(v){f.odo=v;}),'Current reading'));root.appendChild(r3);
+  root.appendChild(mk_tog('Partial fill-up (skip MPG calc)',f.partial,function(v){f.partial=v;upMPG();}));
+  root.appendChild(divider());
+  root.appendChild(mk_ss('Gas Brand',BRANDS,f.brand,'gasBrand',function(v){f.brand=v;},'Select brand...','Type brand name...'));
+  // Octane
+  var octF=fld('Octane');var octSel=mk_sel(OCTANES.map(function(o){return{v:o,l:o.startsWith(String(recOct))?'⭐ '+o+' (Mfr. Min)':o};}),f.octane,function(v){f.octane=v;updOct();});var octW=d({style:{display:'none',fontSize:'11px',marginTop:'4px'}});function updOct(){var n=parseInt(f.octane);octW.style.display='none';if(n<recOct&&n>0){octW.style.color='var(--red)';octW.textContent='⚠ Below mfr. minimum ('+recOct+'). Check owner\'s manual.';octW.style.display='block';}else if(recOct===87&&n===85){octW.style.color='var(--yellow)';octW.textContent='85 octane is for high altitudes — verify with owner\'s manual at elevation.';octW.style.display='block';}}
+  octF.appendChild(octSel);octF.appendChild(octW);octF.appendChild(hint('Mfr. minimum: '+recOct+' octane'));root.appendChild(octF);
+  root.appendChild(fld('Additive',mk_sel(ADDS.map(function(a){return{v:a,l:a};}),f.add,function(v){f.add=v;})));
+  root.appendChild(fld('Driving Style',mk_sel(DSTYLES.map(function(s){return{v:s,l:s};}),f.style,function(v){f.style=v;})));
+  // Advanced
+  var advOpen=false;var arr=s({className:'adv-arr'},'▶');var advTog=d({className:'adv-tog'},arr,' Show advanced options');var advP=d({style:{display:'none',flexDirection:'column',gap:'12px'}});
+  var ar1=d({className:'g2'});ar1.appendChild(fld('Load',mk_sel(LOADS.map(function(l){return{v:l,l:l};}),f.load,function(v){f.load=v;})));ar1.appendChild(fld('Weather',mk_sel(WEATHER.map(function(w){return{v:w,l:w};}),f.weather,function(v){f.weather=v;})));advP.appendChild(ar1);
+  advP.appendChild(mk_tog('A/C Running',f.ac,function(v){f.ac=v;}));
+  var stAC=mk_ac({value:f.station,ph:'e.g. Shell on Main St',fk:'station',onChange:function(v){f.station=v;}});advP.appendChild(fld('Station / Location',stAC.el));
+  advP.appendChild(fld('Notes',mk_ta(f.notes,function(v){f.notes=v;},'Observations...',3)));
+  advTog.addEventListener('click',function(){advOpen=!advOpen;arr.className='adv-arr'+(advOpen?' o':'');advTog.lastChild.textContent=' '+(advOpen?'Hide':'Show')+' advanced options';advP.style.display=advOpen?'flex':'none';});
+  root.appendChild(advTog);root.appendChild(advP);
+  var br=d({style:{display:'flex',gap:'8px',marginTop:'8px'}});br.appendChild(mk_btn('Cancel','secondary',function(){go('dashboard');}));
+  var sv=mk_btn('⛽ Log Fill-Up','primary',function(){if(!f.gal||!f.cost||(!f.mi&&!f.odo))return;if(f.station)saveCH('station',f.station);S.fuel.push({id:uid(),vehicleId:v.id,date:f.date,gallons:+f.gal,totalCost:+f.cost,pricePerGal:+f.ppg||(+f.cost/+f.gal),miles:+f.mi||0,odometer:+f.odo||0,partial:f.partial,brand:f.brand,octane:f.octane,additive:f.add,drivingStyle:f.style,load:f.load,weather:f.weather,acOn:f.ac,station:f.station,notes:f.notes});save();go('dashboard');});sv.style.flex='1';br.appendChild(sv);root.appendChild(br);return root;
+}
+
+// ─── ADD MAINT ───────────────────────────────────────────
+function vMaintForm(){
+  var v=av();if(!v)return d(null,'No vehicle selected.');
+  var today=new Date().toISOString().slice(0,10);var recW=v.recommendedOilWeight||'';var recT=v.recommendedOilType||'';
+  var f={type:MAINT[0],custom:'',date:today,odo:'',cost:'',shop:'',isDIY:false,nextOdo:'',nextDate:'',notes:'',oilType:recT||'Full Synthetic',oilWeight:recW||'5W-30',oilBrand:'',filtBrand:''};
+  var root=d({className:'fade',style:{display:'flex',flexDirection:'column',gap:'14px'}});root.appendChild(mk_sh('LOG SERVICE',v.year+' '+v.make+' '+v.model));
+  var nodiRef;
+  root.appendChild(fld('Service Type',mk_sel(MAINT.map(function(t){return{v:t,l:t};}),f.type,function(v){f.type=v;cust.style.display=v==='Custom'?'flex':'none';oilSec.style.display=v==='Oil Change'?'flex':'none';if(v==='Oil Change'&&f.odo&&!f.nextOdo&&nodiRef){nodiRef.value=String(+f.odo+5000);f.nextOdo=String(+f.odo+5000);}})));
+  var custAC=mk_ac({value:f.custom,ph:'Describe service...',fk:'maintType',onChange:function(v){f.custom=v;}});var cust=fld('Custom Name',custAC.el);cust.style.display='none';root.appendChild(cust);
+  var dr=d({className:'g2'});dr.appendChild(fld('Date',mk_inp('date',f.date,function(v){f.date=v;})));var odi=mk_inp('number',f.odo,function(v){f.odo=v;if(f.type==='Oil Change'&&v&&!f.nextOdo&&nodiRef){nodiRef.value=String(+v+5000);f.nextOdo=String(+v+5000);}},'Current mileage');dr.appendChild(fld('Odometer',odi));root.appendChild(dr);
+  root.appendChild(fld('Total Cost ($)',mk_inp('number',f.cost,function(v){f.cost=v;},'0.00','0.01')));
+  // Shop/DIY
+  var shopAC=mk_ac({value:f.shop,ph:'Dealer, Jiffy Lube...',fk:'shop',onChange:function(v){f.shop=v;}});
+  var diyOn=false;var diyC=d({className:'diyc'});var diyMark=s({style:{fontSize:'12px',color:'#fff',fontWeight:'700',display:'none'}},'✓');diyC.appendChild(diyMark);
+  var diyRow=d({style:{display:'flex',alignItems:'center',gap:'8px',cursor:'pointer',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'8px',padding:'9px 14px',transition:'all .2s',userSelect:'none'}});diyRow.appendChild(diyC);var diyTxt=d(null,d({style:{fontSize:'13px',color:'var(--muted)'}},'Self-Service / DIY'),d({style:{fontSize:'10px',color:'var(--dim)'}},'Done in-house'));diyRow.appendChild(diyTxt);
+  diyRow.addEventListener('click',function(){diyOn=!diyOn;f.isDIY=diyOn;diyC.className='diyc'+(diyOn?' on':'');diyMark.style.display=diyOn?'inline':'none';diyRow.style.background=diyOn?'var(--green-lo)':'var(--surface)';diyRow.style.borderColor=diyOn?'rgba(34,197,94,.33)':'var(--border)';diyTxt.firstChild.style.color=diyOn?'var(--green)':'var(--muted)';shopAC.el.style.display=diyOn?'none':'block';});
+  var shopWrap=d({style:{display:'flex',flexDirection:'column',gap:'8px'}});shopWrap.appendChild(shopAC.el);shopWrap.appendChild(diyRow);root.appendChild(fld('Shop / Location',shopWrap));
+  // Oil
+  var oilSec=d({style:{display:'none',flexDirection:'column',gap:'12px'}});oilSec.appendChild(divider());oilSec.appendChild(d({style:{fontSize:'12px',color:'var(--orange)',fontWeight:'700',letterSpacing:'1px',textTransform:'uppercase'}},'⚙ Oil Details'));
+  if(recW)oilSec.appendChild(d({className:'oil-rec'},'⭐ Manufacturer spec: '+recW+' '+recT));
+  var or1=d({className:'g2'});or1.appendChild(mk_oilT(f.oilType,function(v){f.oilType=v;},recT));or1.appendChild(mk_oilW(f.oilWeight,function(v){f.oilWeight=v;},recW));oilSec.appendChild(or1);
+  var or2=d({className:'g2'});var obAC=mk_ac({value:'',ph:'Mobil 1, Castrol...',fk:'oilBrand',onChange:function(v){f.oilBrand=v;}});var fbAC=mk_ac({value:'',ph:'Wix, Fram, OEM...',fk:'filtBrand',onChange:function(v){f.filtBrand=v;}});or2.appendChild(fld('Oil Brand',obAC.el));or2.appendChild(fld('Filter Brand',fbAC.el));oilSec.appendChild(or2);root.appendChild(oilSec);
+  // Reminder
+  root.appendChild(divider());root.appendChild(s({style:{fontSize:'12px',color:'var(--muted)',fontWeight:'600',letterSpacing:'1px',textTransform:'uppercase'}},'Next Service Reminder'));
+  var nr=d({className:'g2'});var nodi=mk_inp('number',f.nextOdo,function(v){f.nextOdo=v;},'e.g. 58000');nodiRef=nodi;nr.appendChild(fld('Next at Miles',nodi));nr.appendChild(fld('Next by Date',mk_inp('date',f.nextDate,function(v){f.nextDate=v;})));root.appendChild(nr);
+  root.appendChild(fld('Notes / Parts',mk_ta(f.notes,function(v){f.notes=v;},'Parts replaced, warranty info...',3)));
+  var br=d({style:{display:'flex',gap:'8px',marginTop:'8px'}});br.appendChild(mk_btn('Cancel','secondary',function(){go('dashboard');}));
+  var sv=mk_btn('🔧 Log Service','primary',function(){var shopVal=f.isDIY?'DIY / Self-Service':f.shop;if(f.shop&&!f.isDIY)saveCH('shop',f.shop);var entry={id:uid(),vehicleId:v.id,type:f.type==='Custom'&&f.custom?f.custom:f.type,date:f.date,odometer:+f.odo||0,cost:+f.cost||0,shop:shopVal,isDIY:f.isDIY,notes:f.notes,nextOdo:+f.nextOdo||0,nextDate:f.nextDate};if(f.type==='Oil Change')Object.assign(entry,{oilType:f.oilType,oilWeight:f.oilWeight,oilBrand:f.oilBrand,filterBrand:f.filtBrand});S.maint.push(entry);save();go('dashboard');});sv.style.flex='1';br.appendChild(sv);root.appendChild(br);return root;
+}
+
+// ─── HISTORY ─────────────────────────────────────────────
+function vHistory(){
+  var v=av();var fl=v?vFuel(v.id):[];var ml=v?vMaint(v.id):[];var st=v?stats(fl,ml,S.cfg.cpm,v):{};
+  var sF=[].concat(fl).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  var sM=[].concat(ml).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  var tab='fuel';var root=d({className:'fade',style:{display:'flex',flexDirection:'column',gap:'12px'}});
+  root.appendChild(mk_sh('HISTORY',v?v.year+' '+v.make+' '+v.model:''));
+  var tr=d({style:{display:'flex',gap:'8px'}});var fb=el('button',{className:'tab on',onClick:function(){setTab('fuel');}},'\u26FD Fuel ('+sF.length+')');var mb=el('button',{className:'tab',onClick:function(){setTab('maint');}},'\uD83D\uDD27 Service ('+sM.length+')');tr.appendChild(fb);tr.appendChild(mb);root.appendChild(tr);
+  var list=d(null);root.appendChild(list);
+  function setTab(t){tab=t;fb.className='tab'+(t==='fuel'?' on':'');mb.className='tab'+(t==='maint'?' on':'');render();}
+  function render(){clr(list);
+    if(tab==='fuel'){if(!sF.length){list.appendChild(d({style:{textAlign:'center',padding:'40px',color:'var(--muted)',fontSize:'13px'}},'No fuel logs yet'));return;}
+      sF.forEach(function(l){var mpg=!l.partial&&l.miles&&l.gallons?l.miles/l.gallons:null;var col=mpg?(mpg>=(st.best||99)*.9?'var(--green)':mpg>=(st.best||99)*.7?'var(--yellow)':'var(--red)'):'var(--muted)';
+        var hd=d({style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'4px'}});hd.appendChild(s({style:{fontWeight:'600',fontSize:'14px'}},F.dt(l.date)));if(l.partial)hd.appendChild(s({className:'tag',style:{background:'var(--yellow-lo)',color:'var(--yellow)',border:'1px solid rgba(245,158,11,.27)'}},'PARTIAL'));
+        var sub=[l.gallons+' gal',F.usd(l.totalCost)];if(l.pricePerGal)sub.push('$'+(+l.pricePerGal).toFixed(3)+'/gal');if(l.miles>0)sub.push(l.miles+' mi');if(l.odometer)sub.push('ODO: '+F.mi(l.odometer));
+        var sub2=[];if(l.brand)sub2.push(l.brand);if(l.octane)sub2.push(l.octane);if(l.additive&&l.additive!=='None')sub2.push('+'+l.additive);if(l.drivingStyle&&l.drivingStyle!=='Normal')sub2.push(l.drivingStyle);if(l.load&&l.load!=='Solo')sub2.push(l.load);if(l.acOn)sub2.push('A/C');if(l.weather&&l.weather!=='Clear')sub2.push(l.weather);
+        var left=d({style:{flex:'1'}});left.appendChild(hd);left.appendChild(d({style:{fontSize:'12px',color:'var(--muted)',lineHeight:'1.8'}},sub.join(' · ')+(sub2.length?' · '+sub2.join(' · '):'')));if(l.station)left.appendChild(d({style:{fontSize:'11px',color:'var(--muted)'}},l.station));if(l.notes)left.appendChild(d({style:{fontSize:'11px',color:'var(--dim)',fontStyle:'italic'}},l.notes));var bar=mk_bar(mpg,st.best);if(bar)left.appendChild(bar);
+        var right=d({style:{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:'6px',marginLeft:'12px',flexShrink:'0'}});if(mpg!=null)right.appendChild(d({style:{fontFamily:"'Arial Narrow',Arial,sans-serif",fontSize:'26px',fontWeight:'700',color:col,lineHeight:'1'}},mpg.toFixed(1)+'mpg'));
+        var del=mk_btn('✕','ghost',function(){S.fuel=S.fuel.filter(function(x){return x.id!==l.id;});save();sF=sF.filter(function(x){return x.id!==l.id;});render();});del.style.fontSize='11px';del.style.padding='3px 8px';del.style.color='var(--red)';right.appendChild(del);
+        list.appendChild(mk_card([d({style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}},left,right)],{padding:'14px 16px',marginBottom:'0'}));});
+    } else {if(!sM.length){list.appendChild(d({style:{textAlign:'center',padding:'40px',color:'var(--muted)',fontSize:'13px'}},'No service logs yet'));return;}
+      sM.forEach(function(l){
+        var td=d({style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'4px'}});td.appendChild(s({style:{fontFamily:"'Arial Narrow',Arial,sans-serif",fontSize:'17px',fontWeight:'700',color:'var(--blue)'}},l.type));if(l.isDIY)td.appendChild(s({className:'tag',style:{background:'var(--green-lo)',color:'var(--green)',border:'1px solid rgba(34,197,94,.27)'}},'DIY'));
+        var sub=[F.dt(l.date)];if(l.odometer)sub.push(F.mi(l.odometer)+' mi');if(l.shop&&!l.isDIY)sub.push(l.shop);var sub2=[F.usd(l.cost)];if(l.oilType)sub2.push(l.oilType+' '+l.oilWeight);if(l.oilBrand)sub2.push(l.oilBrand);if(l.filterBrand)sub2.push(l.filterBrand+' filter');var sub3=[];if(l.nextOdo)sub3.push('🔔 Next @ '+F.mi(l.nextOdo)+' mi');if(l.nextDate)sub3.push('or '+F.dt(l.nextDate));
+        var left=d({style:{flex:'1'}});left.appendChild(td);left.appendChild(d({style:{fontSize:'12px',color:'var(--muted)',lineHeight:'1.8'}},sub.join(' · ')+'\n'+sub2.join(' · ')+(sub3.length?'\n'+sub3.join(' '):'')));if(l.notes)left.appendChild(d({style:{fontSize:'11px',color:'var(--dim)',fontStyle:'italic'}},l.notes));
+        var del=mk_btn('✕','ghost',function(){S.maint=S.maint.filter(function(x){return x.id!==l.id;});save();sM=sM.filter(function(x){return x.id!==l.id;});render();});del.style.fontSize='11px';del.style.padding='3px 8px';del.style.color='var(--red)';
+        list.appendChild(mk_card([d({style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}},left,del)],{padding:'14px 16px',marginBottom:'0'}));});}
+  }
+  render();return root;
+}
+
+// ─── VEHICLES ────────────────────────────────────────────
+function vVehicles(){
+  var v=av();var root=d({className:'fade',style:{display:'flex',flexDirection:'column',gap:'12px'}});root.appendChild(mk_sh('MY VEHICLES',null,mk_btn('+ Add','primary',function(){go('addv');})));
+  if(!S.vehicles.length){root.appendChild(d({style:{textAlign:'center',padding:'48px'}},d({style:{fontSize:'56px',marginBottom:'14px'}},'🚗'),d({style:{color:'var(--muted)',fontSize:'13px',marginBottom:'22px'}},'No vehicles yet'),mk_btn('+ Add First Vehicle','primary',function(){go('addv');})));return root;}
+  S.vehicles.forEach(function(veh){var isAct=v&&veh.id===v.id;var parts=[veh.trim,veh.engine,veh.transmission].filter(Boolean);
+    var left=d(null,d({style:{fontFamily:"'Arial Narrow',Arial,sans-serif",fontSize:'20px',fontWeight:'700'}},veh.year+' '+veh.make+' '+veh.model));if(parts.length)left.appendChild(d({style:{fontSize:'12px',color:'var(--muted)'}},parts.join(' · ')));if(veh.nickname)left.appendChild(d({style:{fontSize:'13px',color:'var(--blue)',fontWeight:'600'}},'"'+veh.nickname+'"'));if(veh.isHybrid)left.appendChild(d({style:{fontSize:'11px',color:'var(--green)'}},'⚡ Hybrid'));var info=[veh.color,veh.tankSize>0?veh.tankSize+'gal':'',veh.fuelType].filter(Boolean).join(' · ');if(info)left.appendChild(d({style:{fontSize:'11px',color:'var(--dim)',marginTop:'4px'}},info));
+    var right=d({style:{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:'8px'}});if(isAct)right.appendChild(s({className:'tag',style:{background:'var(--orange-lo)',color:'var(--orange)',border:'1px solid rgba(255,98,0,.27)'}},'ACTIVE'));var del=mk_btn('✕ Remove','ghost',function(e){e.stopPropagation();S.vehicles=S.vehicles.filter(function(x){return x.id!==veh.id;});S.fuel=S.fuel.filter(function(l){return l.vehicleId!==veh.id;});S.maint=S.maint.filter(function(l){return l.vehicleId!==veh.id;});if(S.activeId===veh.id)S.activeId=S.vehicles.length?S.vehicles[0].id:null;save();renderAll();});del.style.fontSize='11px';del.style.padding='3px 8px';del.style.color='var(--red)';right.appendChild(del);
+    root.appendChild(mk_card([d({style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},left,right)],{border:isAct?'1px solid var(--orange)':'1px solid var(--border)',boxShadow:isAct?'0 0 18px var(--orange-lo)':'none'},function(){S.activeId=veh.id;save();renderAll();}));});
+  return root;
+}
+
+// ─── SETTINGS ────────────────────────────────────────────
+function vSettings(){
+  var root=d({className:'fade',style:{display:'flex',flexDirection:'column',gap:'14px'}});root.appendChild(mk_sh('SETTINGS'));
+  root.appendChild(mk_card([d({style:{fontSize:'12px',color:'var(--orange)',fontWeight:'700',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'14px'}},'Cost Per Mile Method'),fld('Default Period',mk_sel(CMPM,S.cfg.cpm,function(v){S.cfg.cpm=v;ls.s('cfg',S.cfg);}),'Controls cost-per-mile on dashboard'),(function(){var x=d({style:{marginTop:'14px',padding:'12px',background:'var(--surface)',borderRadius:'8px',fontSize:'12px',color:'var(--muted)',lineHeight:'1.8'}});x.innerHTML='<strong style="color:var(--orange)">True Cost/Mile</strong> — (fuel + service) ÷ miles<br><strong style="color:var(--yellow)">Fuel Cost/Mile</strong> — fuel only ÷ miles<br><strong style="color:var(--blue)">Ownership</strong> — resets to purchase date';return x;})()]));
+  root.appendChild(mk_card([(function(){var x=d({style:{fontSize:'12px',color:'var(--muted)',lineHeight:'2'}});x.innerHTML='<strong style="color:var(--blue)">Fully Offline Edition</strong><br><strong style="color:var(--text)">No internet required</strong> after downloading this file.<br><strong style="color:var(--text)">Vehicle database</strong> — 40+ makes, 600+ models embedded.<br><strong style="color:var(--text)">All data</strong> — stored locally in Chrome on your device.<br><span style="color:var(--dim);font-size:11px">AI spec lookup available in the Claude.ai version.<br>FuelTrack v1.2 Offline · Built for gearheads 🔧</span>';return x;})()]));
+  root.appendChild(mk_card([(function(){var x=d({style:{fontSize:'12px',color:'var(--muted)',lineHeight:'1.8'}});x.innerHTML='<strong style="color:var(--yellow)">⚠ Data Storage</strong><br>Data is tied to this file\'s location in Chrome. Keep the file in the same place. Add to home screen for the most stable storage. Clearing Chrome site data will erase your logs.';return x;})()]));
+  return root;
+}
+
+// ─── ADD VEHICLE (3 steps) ───────────────────────────────
+function vAddV(){
+  var OTH='__other__';var step=0;var vf={year:CY,make:'',model:'',trim:'',engine:'',trans:'',tank:'',ft:'gasoline',oct:87,hybrid:false,oilW:'',oilT:'',nick:'',color:'',vin:'',pmi:'',pd:new Date().toISOString().slice(0,10),market:'USDM',cMkt:''};
+  var root=d({className:'fade',style:{display:'flex',flexDirection:'column',gap:'14px'}});
+  var head=d(null),body=d(null);root.appendChild(head);root.appendChild(body);
+  function rs(){clr(head);clr(body);var subs=['Year · Make · Model','Specs & Powertrain','Details & Purchase'];head.appendChild(mk_sh('ADD VEHICLE',subs[step]));if(step===0)s0();else if(step===1)s1();else s2();}
+  function s0(){var c=body;
+    var r=d({className:'g2'});
+    r.appendChild(fld('Year',mk_sel(YEARS.map(function(y){return{v:y,l:y};}),vf.year,function(v){vf.year=+v;})));
+    var mkF=d({className:'field'});mkF.appendChild(lbl('Make'));
+    var mkSel=mk_sel([{v:'',l:'Select make...'}].concat(ALL_MAKES.map(function(m){return{v:m,l:m};})).concat([{v:OTH,l:'── Other / Custom ──'}]),vf.make,function(v){vf.make=v;if(v&&v!==OTH)refMd();if(v===OTH){cMkArea.style.display='block';mdArea.style.display='none';}else{cMkArea.style.display='none';mdArea.style.display='flex';}});
+    var cMkAC=mk_ac({value:'',ph:'Type make name...',fk:'make',onChange:function(v){vf.make=v;}});var cMkArea=d({style:{display:'none',flexDirection:'column',gap:'8px',marginTop:'6px'}});cMkArea.appendChild(cMkAC.el);cMkArea.appendChild(mk_btn('Continue →','primary',function(){if(vf.make){step=1;rs();}}));
+    mkF.appendChild(mkSel);mkF.appendChild(cMkArea);r.appendChild(mkF);c.appendChild(r);
+    // Advanced
+    var advO=false;var advB=d({style:{display:'flex',alignItems:'center',gap:'8px',fontSize:'12px',cursor:'pointer',color:'var(--purple)',border:'1px solid rgba(168,85,247,.27)',background:'var(--purple-lo)',borderRadius:'8px',padding:'8px 12px',marginTop:'4px',userSelect:'none'}},s({style:{fontSize:'16px'}},'⚙'),' Advanced Search',s({style:{marginLeft:'auto',fontSize:'10px',opacity:'0.6'}},'imports · market'));
+    var advC=d({className:'adv-panel'});advC.appendChild(d({className:'adv-title'},'⚙ Power User Options'));advC.appendChild(fld('Market / Region',mk_sel(MKTS.map(function(m){return{v:m.v,l:m.l};}),vf.market,function(v){vf.market=v;cMktA.style.display=v==='Custom'?'block':'none';}),'Changes model/spec context'));var cMktA=d({style:{display:'none'}});cMktA.appendChild(fld('Custom Market',mk_inp('text',vf.cMkt,function(v){vf.cMkt=v;},'e.g. South American...')));advC.appendChild(cMktA);advC.appendChild(d({style:{padding:'10px',background:'var(--surface)',borderRadius:'8px',fontSize:'12px',color:'var(--muted)',lineHeight:'1.7'}},'🔧 For modified vehicles, choose base platform and add details in nickname.'));
+    advB.addEventListener('click',function(){advO=!advO;advC.className='adv-panel'+(advO?' o':'');});c.appendChild(advB);c.appendChild(advC);
+    // Model
+    var mdArea=d({style:{display:vf.make&&vf.make!==OTH?'flex':'none',flexDirection:'column',gap:'6px'}});var mdF=d({className:'field'});mdArea.appendChild(mdF);c.appendChild(mdArea);
+    function refMd(){clr(mdF);mdF.appendChild(lbl('Model'));var models=VDB[vf.make]||[];if(!models.length){var mAC=mk_ac({value:'',ph:'Type model name...',fk:'model',onChange:function(v){vf.model=v;}});mdF.appendChild(mAC.el);var nb=mk_btn('Continue →','primary',function(){if(vf.model){step=1;rs();}});nb.style.marginTop='8px';mdF.appendChild(nb);}else{var mSel=mk_sel([{v:'',l:'Select model...'}].concat(models.map(function(m){return{v:m,l:m};})).concat([{v:OTH,l:'── Other / Custom ──'}]),vf.model,function(v){vf.model=v;if(v&&v!==OTH){step=1;rs();}else if(v===OTH){cMdA.style.display='flex';}else{cMdA.style.display='none';}});mdF.appendChild(mSel);var cMdAC=mk_ac({value:'',ph:'Type model (import / non-standard)...',fk:'model',onChange:function(v){vf.model=v;}});var cMdA=d({style:{display:'none',flexDirection:'column',gap:'8px',marginTop:'6px'}});cMdA.appendChild(cMdAC.el);cMdA.appendChild(mk_btn('Continue →','primary',function(){if(vf.model){step=1;rs();}}));mdF.appendChild(cMdA);}};
+    if(vf.make&&vf.make!==OTH)refMd();
+    if(!vf.make)c.appendChild(d({style:{textAlign:'center',padding:'32px',color:'var(--muted)',fontSize:'13px',border:'1px dashed var(--border)',borderRadius:'8px'}},'Select a year and make above to continue'));
+  }
+  function s1(){var c=body;var rMk=vf.make===OTH?'(Custom)':vf.make,rMd=vf.model===OTH?'(Custom)':vf.model;
+    c.appendChild(mk_card([d({style:{fontSize:'11px',color:'var(--blue)',fontWeight:'700',letterSpacing:'1px',marginBottom:'4px'}},'VEHICLE SPECS'+(vf.market&&vf.market!=='USDM'?' — '+vf.market:'')),d({style:{fontFamily:"'Arial Narrow',Arial,sans-serif",fontSize:'22px',fontWeight:'700'}},vf.year+' '+rMk+' '+rMd),d({style:{fontSize:'11px',color:'var(--muted)',marginTop:'4px'}},'Fill in what you know — only octane is critical')],{background:'linear-gradient(135deg,var(--blue-lo),var(--card))',border:'1px solid rgba(0,200,232,.2)'}));
+    c.appendChild(mk_ss('Trim / Package',[],vf.trim,'trim',function(v){vf.trim=v;},'Select or type...','e.g. XLT, Type R, TRD Pro...'));
+    var eAC=mk_ac({value:vf.engine,ph:'e.g. 5.0L V8, 2JZ-GTE, EcoBoost...',fk:'engine',onChange:function(v){vf.engine=v;}});c.appendChild(fld('Engine',eAC.el));
+    c.appendChild(mk_ss('Transmission',TRANS,vf.trans,'transmission',function(v){vf.trans=v;},'Select...','e.g. Getrag 6-speed...','Affects expected MPG range'));
+    c.appendChild(mk_tog('Hybrid Powertrain',vf.hybrid,function(v){vf.hybrid=v;},'Check if this is the hybrid variant'));
+    var tr=d({className:'g2'});tr.appendChild(fld('Tank Size (gal)',mk_inp('number',vf.tank,function(v){vf.tank=v;},'e.g. 23.6','0.1')));tr.appendChild(fld('Fuel Type',mk_sel(FTYPES.map(function(f){return{v:f[0],l:f[1]};}),vf.ft,function(v){vf.ft=v;})));c.appendChild(tr);
+    c.appendChild(fld('Manufacturer Minimum Octane',mk_sel([{v:85,l:'85 (High Altitude spec)'},{v:87,l:'87 (Regular — mfr. min)'},{v:89,l:'89 (Mid-Grade — mfr. min)'},{v:91,l:'91 (Premium — mfr. min)'},{v:93,l:'93 (Premium+ — mfr. min)'}],vf.oct,function(v){vf.oct=+v;}),'Per owner\'s manual, not local pump grades'));
+    c.appendChild(divider());c.appendChild(s({style:{fontSize:'11px',color:'var(--muted)',fontWeight:'600',textTransform:'uppercase',letterSpacing:'1px'}},'Manufacturer Oil Spec (enables ⭐ in oil log)'));
+    var or=d({className:'g2'});or.appendChild(fld('Rec. Oil Weight',mk_sel([{v:'',l:'Unknown'}].concat(OILW.map(function(w){return{v:w,l:w};})),vf.oilW,function(v){vf.oilW=v;})));or.appendChild(fld('Rec. Oil Type',mk_sel([{v:'',l:'Unknown'}].concat(OILT.map(function(t){return{v:t,l:t};})),vf.oilT,function(v){vf.oilT=v;})));c.appendChild(or);
+    var br=d({style:{display:'flex',gap:'8px',marginTop:'4px'}});br.appendChild(mk_btn('← Back','secondary',function(){step=0;rs();}));br.appendChild(mk_btn('Next: Details →','primary',function(){step=2;rs();},true));c.appendChild(br);
+  }
+  function s2(){var c=body;var rMk=vf.make===OTH?'(Custom)':vf.make,rMd=vf.model===OTH?'(Custom)':vf.model,rTr=vf.trim===OTH?'':vf.trim;
+    var parts=[rTr,vf.engine,vf.trans].filter(Boolean);
+    c.appendChild(mk_card([d({style:{fontFamily:"'Arial Narrow',Arial,sans-serif",fontSize:'22px',fontWeight:'700'}},vf.year+' '+rMk+' '+rMd),parts.length?d({style:{fontSize:'13px',color:'var(--muted)'}},parts.join(' · ')):null,vf.hybrid?d({style:{fontSize:'11px',color:'var(--green)',marginTop:'2px'}},'⚡ Hybrid'):null,vf.oilW?d({style:{fontSize:'11px',color:'var(--yellow)',marginTop:'3px'}},'⭐ Oil: '+vf.oilW+' '+vf.oilT):null].filter(Boolean),{background:'linear-gradient(135deg,var(--orange-lo),var(--card))',border:'1px solid rgba(255,98,0,.2)'}));
+    var nkAC=mk_ac({value:vf.nick,ph:'Optional nickname',fk:'nickname',onChange:function(v){vf.nick=v;}});c.appendChild(fld('Nickname',nkAC.el,'"Daily Driver", "The Truck", "Project Car"'));
+    var r=d({className:'g2'});var clAC=mk_ac({value:vf.color,ph:'e.g. Oxford White',fk:'vehicleColor',onChange:function(v){vf.color=v;}});r.appendChild(fld('Color',clAC.el));r.appendChild(fld('Purchase Date',mk_inp('date',vf.pd,function(v){vf.pd=v;})));c.appendChild(r);
+    c.appendChild(fld('Odometer at Purchase',mk_inp('number',vf.pmi,function(v){vf.pmi=v;},'e.g. 45000'),'Used for ownership-period cost tracking'));
+    c.appendChild(fld('VIN (optional)',mk_inp('text',vf.vin,function(v){vf.vin=v;},'17-char VIN')));
+    var br=d({style:{display:'flex',gap:'8px',marginTop:'8px'}});br.appendChild(mk_btn('← Back','secondary',function(){step=1;rs();}));
+    var sv=mk_btn('✓ Save Vehicle','primary',function(){var fm=vf.make===OTH?'':vf.make,fmd=vf.model===OTH?'':vf.model;if(!fm&&!fmd)return;var nv={id:uid(),year:vf.year,make:fm,model:fmd,trim:vf.trim===OTH?'':vf.trim,engine:vf.engine,transmission:vf.trans,tankSize:parseFloat(vf.tank)||0,fuelType:vf.ft,recommendedOctane:vf.oct,isHybrid:vf.hybrid,recommendedOilWeight:vf.oilW,recommendedOilType:vf.oilT,market:vf.market==='Custom'?(vf.cMkt||'USDM'):vf.market,nickname:vf.nick,color:vf.color,vin:vf.vin,purchaseMileage:parseFloat(vf.pmi)||0,purchaseDate:vf.pd,addedDate:new Date().toISOString()};S.vehicles.push(nv);S.activeId=nv.id;save();go('dashboard');},true);br.appendChild(sv);c.appendChild(br);
+    c.appendChild(mk_btn('Cancel','ghost',function(){go(S.vehicles.length?'vehicles':'dashboard');},true));
+  }
+  rs();return root;
+}
+
+// ─── HEADER / NAV / RENDER ───────────────────────────────
+function renderHeader(){
+  var hi=document.getElementById('hi');clr(hi);
+  var left=d(null,d({className:'hlogo'},s({className:'lo'},'FUEL'),s({className:'lb'},'TRACK')),d({className:'hsub'},'MPG & Service Log'));hi.appendChild(left);
+  var right=d({style:{display:'flex',gap:'8px',alignItems:'center'}});var v=av();
+  if(S.vehicles.length>1){var vs=mk_sel(S.vehicles.map(function(x){return{v:x.id,l:x.year+' '+x.make+(x.nickname?' "'+x.nickname+'"':' '+x.model)};}),S.activeId||'',function(id){S.activeId=id;save();renderAll();});vs.style.fontSize='12px';vs.style.padding='5px 10px';vs.style.maxWidth='160px';vs.style.borderColor='rgba(255,98,0,.27)';right.appendChild(vs);}
+  else if(v)right.appendChild(s({style:{fontSize:'12px',color:'var(--muted)'}},v.year+' '+v.make+' '+v.model));
+  right.appendChild(el('button',{style:{background:'transparent',color:'var(--muted)',fontSize:'18px',padding:'4px',border:'none',cursor:'pointer'},onClick:function(){go('settings');}},'⚙'));hi.appendChild(right);
+}
+function renderNav(){
+  var nav=document.getElementById('nav');clr(nav);
+  var tabs=[{id:'dashboard',icon:'📊',lbl:'Dashboard'},{id:'fuel',icon:'⛽',lbl:'Fuel'},{id:'maint',icon:'🔧',lbl:'Service'},{id:'history',icon:'📋',lbl:'History'},{id:'vehicles',icon:'🚗',lbl:'Vehicles'}];
+  tabs.forEach(function(t){var isOn=S.view===t.id||(S.view==='addv'&&t.id==='vehicles')||(S.view==='settings'&&t.id==='dashboard');var b=el('button',{className:'nb'+(isOn?' on':''),onClick:function(){navGo(t.id);}});b.appendChild(d({className:'ni'},t.icon));b.appendChild(d({className:'nl'},t.lbl));nav.appendChild(b);});
+}
+function renderMain(){
+  var main=document.getElementById('main');clr(main);
+  var views={dashboard:vDash,fuel:vFuelForm,maint:vMaintForm,history:vHistory,vehicles:vVehicles,addv:vAddV,settings:vSettings};
+  main.appendChild((views[S.view]||vDash)());
+  main.scrollTop=0;
+}
+function renderAll(){renderHeader();renderMain();renderNav();}
+document.addEventListener('DOMContentLoaded',function(){
+  var app=document.getElementById('app'),sp=document.getElementById('splash');
+  app.style.display='flex';renderAll();
+  setTimeout(function(){sp.style.opacity='0';setTimeout(function(){sp.style.display='none';},400);},350);
+});
+</script>
+</body>
+</html>
